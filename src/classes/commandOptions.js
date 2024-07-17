@@ -1,21 +1,27 @@
 class CommandOptions {
   constructor() {
     /**
-     * @type {string | undefined}
+     * @type {{
+     * description: string | undefined,
+     * aliases: Array<string>,
+     * permissions: {
+     *  user: import("discord.js").PermissionResolvable,
+     *  bot: import("discord.js").PermissionResolvable,
+     * },
+     * ownerOnly: boolean,
+     * developersOnly: boolean
+     * }}
      */
-    this.description = undefined;
-    /**
-     * @type {string[]}
-     */
-    this.aliases = [];
-    /**
-     * @type {import("discord.js").PermissionResolvable}
-     */
-    this.userPermissions = [];
-    /**
-     * @type {import("discord.js").PermissionResolvable}
-     */
-    this.botPermissions = [];
+    this.data = {
+      description: undefined,
+      aliases: [],
+      permissions: {
+        user: [],
+        bot: [],
+      },
+      ownerOnly: false,
+      developersOnly: false,
+    };
   }
 
   /**
@@ -23,7 +29,7 @@ class CommandOptions {
    * @param {string} desc
    */
   setDescription(desc) {
-    this.description = desc;
+    this.data.description = desc;
     return this;
   }
 
@@ -32,7 +38,7 @@ class CommandOptions {
    * @param {string | string[]} aliases
    */
   setAliases(aliases) {
-    this.aliases = (Array.isArray(aliases) ? aliases : [aliases]).filter(
+    this.data.aliases = (Array.isArray(aliases) ? aliases : [aliases]).filter(
       (x) => typeof x === "string"
     );
     return this;
@@ -43,7 +49,8 @@ class CommandOptions {
    * @param {import("discord.js").PermissionResolvable} perms
    */
   setUserPermissions(perms) {
-    this.userPermissions = perms;
+    this.data.permissions.user = perms;
+    return this;
   }
 
   /**
@@ -51,7 +58,26 @@ class CommandOptions {
    * @param {import("discord.js").PermissionResolvable} perms
    */
   setBotPermissions(perms) {
-    this.botPermissions = perms;
+    this.data.permissions.bot = perms;
+    return this;
+  }
+
+  /**
+   *
+   * @param {boolean} v
+   */
+  onlyOwner(v) {
+    this.data.ownerOnly = !!v;
+    return this;
+  }
+
+  /**
+   *
+   * @param {boolean} v
+   */
+  onlyDevs(v) {
+    this.data.developersOnly = !!v;
+    return this;
   }
 }
 

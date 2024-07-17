@@ -14,8 +14,8 @@ module.exports = class extends clientEvent {
   async run(client) {
     console.log("loading Slash Commands...");
     let commands = client.slashCommands.toJSON().map((e) => e.options);
-    if (client.GUILDS?.size > 0) {
-      for (let guild of client.GUILDS) {
+    if (client.additionalOptions.allowedGuilds?.length > 0) {
+      for (let guild of client.additionalOptions.allowedGuilds) {
         await client.rest
           .put(Routes.applicationGuildCommands(client.user.id, guild), {
             body: commands,

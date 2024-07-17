@@ -14,15 +14,26 @@ module.exports = class extends clientEvent {
    */
   async run(client, message) {
     if (message.author.bot || !message.inGuild()) return;
-    if (!message.content.startsWith(client.prefix)) return;
+    if (client.additionalOptions.allowedGuilds?.length > 0) {
+      if (!client.additionalOptions.allowedGuilds?.includes(message.guildId)) {
+        if (client.additionalOptions.deniedGuildsAction === "NO_RESPONSE")
+          return;
+        else return await message.guild.leave().catch(() => {});
+      }
+    }
     const [commandName, ...args] = message.content
-      .slice(client.prefix.length)
+      .slice(client.prefix?.length || 0)
       .trim()
       .split(" ");
 
     const command = client.getCommand(commandName);
+    if (
+      !message.content.startsWith(client.prefix) ||
+      (!client.prefix && command)
+    )
+      return;
     if (command) {
-      if (command.options.botPermissions.length > 0) {
+      if (command.options.data.permissions.bot.length > 0) {
         let misPerms = this.missingPermissions(
           message.member,
           command.options.botPermissions
@@ -34,7 +45,7 @@ module.exports = class extends clientEvent {
           return;
         }
       }
-      if (command.options.userPermissions.length > 0) {
+      if (command.options.data.permissions.user.length > 0) {
         let misPerms = this.missingPermissions(
           message.member,
           command.options.userPermissions
@@ -45,6 +56,17 @@ module.exports = class extends clientEvent {
           });
           return;
         }
+      }
+      if (command.options.data.ownerOnly) {
+        if (!client.additionalOptions.botsOwner)
+          throw new TypeError(
+            `${command.commandName} is only for bot owner but owner id is ${client.additionalOptions.botsOwner}`
+          );
+        if (message.author.id !== client.additionalOptions.botsOwner) return;
+      }
+      if (command.options.data.developersOnly) {
+        if (!client.additionalOptions.botsDevs?.includes(message.author.id))
+          return;
       }
       await command.run(client, message, args);
     }

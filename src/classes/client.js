@@ -7,10 +7,15 @@ class Client extends DiscordClient {
   /**
    *
    * @param {import("discord.js").ClientOptions} options
+   * @param {object} additionalOptions
+   * @param {string | undefined} additionalOptions.prefix if not provided message commands will never work
+   * @param {string | undefined} additionalOptions.botsOwner set the bot's owner id, may throw an erro if not provided with ownerOnly command
+   * @param {Array<string> | undefined} additionalOptions.botsDevs set bot's developers, can be used for DevelopersOnly Commands
+   * @param {Array<string> | undefined} additionalOptions.allowedGuilds if exists the slash commands will only loaded in these guilds only, if not global load will be.
+   * @param {"LEAVE" | "NO_RESPONSE"} additionalOptions.deniedGuildsAction only works when allowedGuilds exists
    */
-  constructor(options) {
+  constructor(options, additionalOptions) {
     super(options);
-
     /**
      * @type {Collection<string, clientCommand>}
      */
@@ -27,12 +32,11 @@ class Client extends DiscordClient {
      * @type {Collection<string, clientEvent>}
      */
     this.events = new Collection();
-
-    this.GUILDS = new Set(
-      process.env.GUILDS?.split(",")?.map((e) => e?.trim())
-    );
-    this.DEVS = new Set(process.env.DEVS?.split(",")?.map((e) => e?.trim()));
-    this.prefix = process.env.PREFIX || "!";
+    /**
+     * @type {typeof additionalOptions}
+     */
+    this.additionalOptions = additionalOptions;
+    this.prefix = this.additionalOptions.prefix;
   }
 
   getCommand(cmd) {
